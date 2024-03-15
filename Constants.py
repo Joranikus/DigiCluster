@@ -1,8 +1,8 @@
 import pygame
 
 #   Screen Size
-WIDTH, HEIGHT = 1920, 720  # use your screens display information
-WIN = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF)
+WIDTH, HEIGHT = 800, 480  # use your screens display information
+WINDOW = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF)
 FPS = 60
 
 # Title and Icon
