@@ -2,8 +2,8 @@ import pygame
 # Assuming Background, SevenSegmentClock, RPMGauge, etc., are defined in the modules package
 
 from modules.segment_display import SevenSegmentClock
-from modules.rpm_gauge import RPMGauge
-from modules.gauges import VerticalBarGauge, OilPressureGauge
+# from modules.rpm_gauge import RPMGauge
+from modules.gauges import Gauge, RPMGauge
 from modules.stuff import ImageSprite, PlaceObject
 # Other imports as necessary
 
@@ -21,7 +21,28 @@ LIGHTS_BACKGROUND = PlaceObject('images/lights/lights_background.png')
 CLOCK_BACKGROUND = PlaceObject('images/clock/clock_background.png')
 BARS_BACKGROUND = PlaceObject('images/bars/bars_background.png')
 # Layer 3 Foreground Objects
-oil_pressure_gauge = OilPressureGauge(position=(0, 0), min_value=0, max_value=5)
+# For a gauge that uses single image mode (e.g., OilPressureGauge)
+oil_pressure_gauge = Gauge('images/bars/oil_pressure/oil_pressure_', 
+                           position=(0,0), min_value=0, max_value=5, 
+                           single_image_mode=True
+                           )
+fuel_gauge = Gauge('images/bars/fuel_level/fuel_level_', 
+                           position=(0,0), min_value=0, max_value=100, 
+                           single_image_mode=True
+                           )
+coolant_temp_gauge = Gauge('images/bars/coolant_temp/coolant_temp_', 
+                           position=(0,0), min_value=40, max_value=120, 
+                           single_image_mode=True
+                           )
+turbo_pressure_gauge = Gauge('images/bars/turbo/turbo_pressure_', 
+                           position=(0,0), min_value=0, max_value=100, 
+                           single_image_mode=True
+                           )
+rpm_gauge = RPMGauge('images/rpm/', 
+                           position=(0,0), min_value=0, max_value=7000, 
+                           max_bars=70
+                           )
+
 #seven_segment_clock = SevenSegmentClock(position=(x, y))  # Add necessary arguments
 #rpm_gauge = RPMGauge(base_image_path='path/to/rpm/', positions=[(x1, y1), (x2, y2), ...])
 
@@ -42,8 +63,21 @@ while running:
     BARS_BACKGROUND.draw(screen)
 
     # Layer 3: Draw dynamic components
-    oil_pressure_gauge.set_value(3)
+    oil_pressure_gauge.set_value(3) #TODO: is hardcoded value
+    fuel_gauge.set_value(50) #TODO: is hardcoded value
+    coolant_temp_gauge.set_value(50) #TODO: is hardcoded value
+    turbo_pressure_gauge.set_value(50) #TODO: is hardcoded value
+    rpm_gauge.set_value(6200) #TODO: is hardcoded value
+
+
     oil_pressure_gauge.draw(screen)
+    fuel_gauge.draw(screen)
+    coolant_temp_gauge.draw(screen)
+    turbo_pressure_gauge.draw(screen)
+    rpm_gauge.draw(screen)
+
+
+
     # Update the states of your dynamic components based on your application's logic
     # For demonstration, let's say we update the seven-segment clock with the current time
     #now = pygame.time.get_ticks()  # Example: Use the current ticks to simulate time

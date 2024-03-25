@@ -2,100 +2,77 @@
 import pygame
 from modules.stuff import ImageSprite
 
-class VerticalBarGauge:
-    """
-    A class representing a vertical bar gauge display in Pygame.
-
-    Attributes:
-        max_bars (int): The maximum number of bars the gauge can display.
-        position (tuple): The (x, y) position of the bottom bar on the screen.
-        min_value (float): The minimum value the gauge can represent.
-        max_value (float): The maximum value the gauge can represent.
-        bar_image (Surface): The Pygame surface containing the image of a bar.
-        bar_height (int): The height of a single bar.
-        bars (list): A list of boolean values indicating the active state of each bar.
-    """
-
-    def __init__(self, image_path, max_bars, position, min_value, max_value):
-        """
-        Args:
-            image_path (str): The file path to the bar image.
-            max_bars (int): The total number of bars in the gauge.
-            position (tuple): The position of the gauge on the screen.
-            min_value (float): The minimum value the gauge can represent.
-            max_value (float): The maximum value the gauge can represent.
-        """
-        self.max_bars = max_bars
+class Gauge:
+    def __init__(self, asset_path, position, min_value, max_value, max_bars=20, single_image_mode=False):
         self.position = position
         self.min_value = min_value
         self.max_value = max_value
-        self.bar_image = pygame.image.load(image_path)
-        self.bar_height = self.bar_image.get_height()
-        self.bars = [True] * max_bars  # Initialize all bars to 'off'
-    
+        self.max_bars = max_bars
+        self.asset_path = asset_path
+        self.single_image_mode = single_image_mode  # Indicates whether the gauge uses single image mode
+        self.current_bar_index = 1 if single_image_mode else None  # Track the current image index if in single image mode
+        self.bar_image = None if single_image_mode else pygame.image.load(f'{self.asset_path}{1}.png')  # Load the first image or None
+
     def set_value(self, value):
         normalized_value = (value - self.min_value) / (self.max_value - self.min_value)
-        num_active_bars = int(normalized_value * self.max_bars)
-        for i, bar in enumerate(self.bars):
-            bar.active = i < num_active_bars
+        new_bar_index = int(normalized_value * self.max_bars) + 1
 
+        if self.single_image_mode:
+            # For gauges that show a single image based on the value
+            new_bar_index = max(1, min(new_bar_index, self.max_bars))
+            if self.current_bar_index != new_bar_index:
+                self.current_bar_index = new_bar_index
+                self.bar_image = pygame.image.load(f'{self.asset_path}{self.current_bar_index}.png')
+        else:
+            # For traditional vertical bar gauges with multiple bars
+            for i in range(self.max_bars):
+                self.bars[i].active = i < new_bar_index
+
+    def draw(self, screen):
+        if self.single_image_mode:
+            # Draw the current image for single image mode gauges
+            if self.bar_image:
+                screen.blit(self.bar_image, self.position)
+        else:
+            # Draw each active bar for traditional vertical bar gauges
+            for i, bar in enumerate(self.bars):
+                if bar.active:
+                    y_position = self.position[1] - (i * self.bar_height)
+                    screen.blit(self.bar_image, (self.position[0], y_position))
+
+class RPMGauge(Gauge):
+    def __init__(self, asset_path, position, min_value, max_value, max_bars):
+        super().__init__(asset_path, position, min_value, max_value, max_bars, single_image_mode=True)
+        self.step_value = (max_value - min_value) / (max_bars - 1)  # Calculate the step value based on the range and number of bars
+
+    def set_value(self, value):
+        """
+        Sets the RPM value and updates the gauge to display the corresponding image.
+
+        Args:
+            value (float): The current RPM value, clamped to the min and max values.
+        """
+        # Ensure the value is within the valid range
+        value = max(self.min_value, min(value, self.max_value))
+
+        # Calculate the index for the image corresponding to the current RPM value
+        # This calculation assumes images are named for every 100 RPM from 100 to 7000
+        new_rpm_index = int((value + 99) // 100)  # Adding 99 to ensure proper rounding up for every 100 RPM
+
+        # Ensure the new index falls within the range of available images
+        new_rpm_index = max(1, min(new_rpm_index, self.max_bars))
+
+        # Update the current RPM image if the index has changed
+        if self.current_bar_index != new_rpm_index:
+            self.current_bar_index = new_rpm_index
+            # Load the corresponding image based on the current_rpm_index
+            image_filename = f'rpm_{self.current_bar_index * 100}.png'
+            self.bar_image = pygame.image.load(f'{self.asset_path}{image_filename}')
 
 
     def draw(self, screen):
         """
-        Draw the active bars on the screen.
-
-        Args:
-            screen (Surface): The Pygame screen surface where the gauge will be drawn.
-        """
-        for i, active in enumerate(self.bars):
-            if active:
-                y_position = self.position[1] - (i * self.bar_height)
-                screen.blit(self.bar_image, (self.position[0], y_position))
-
-class OilPressureGauge(VerticalBarGauge):
-    """
-    A class representing an oil pressure gauge in Pygame, showing only one image at a time
-    based on the current oil pressure value.
-    """
-    OIL_PRESSURE_GAUGE_ASSET_PATH = 'images/bars/oil_pressure/'
-
-    def __init__(self, position, min_value, max_value):
-        """
-        Initializes the oil pressure gauge with a position and value range. The gauge
-        will display a specific image based on the current value.
-
-        Args:
-            position (tuple): The position of the gauge on the screen.
-            min_value (float): The minimum value the gauge can represent.
-            max_value (float): The maximum value the gauge can represent.
-        """
-        super().__init__(self.OIL_PRESSURE_GAUGE_ASSET_PATH + 'oil_pressure_1.png', 20, position, min_value, max_value)
-        self.current_bar = None
-
-    def set_value(self, value):
-        """
-        Sets the oil pressure value and updates the gauge to display the corresponding image.
-
-        Args:
-            value (float): The current oil pressure value.
-        """
-        normalized_value = (value - self.min_value) / (self.max_value - self.min_value)
-        bar_index = int(normalized_value * 20)  # Assuming 20 total images
-
-        # Clamp the index to be within the range of available images
-        bar_index = max(1, min(bar_index, 20))
-
-        # Update the current bar image based on the value
-        if self.current_bar != bar_index:
-            self.current_bar = bar_index
-            self.bar_image = pygame.image.load(self.OIL_PRESSURE_GAUGE_ASSET_PATH + f'oil_pressure_{self.current_bar}.png')
-
-    def draw(self, screen):
-        """
-        Draws the current bar image on the screen at the gauge's position.
+        Draws the current RPM image on the screen at the gauge's position.
         """
         if self.bar_image:  # Ensure there is an image to draw
             screen.blit(self.bar_image, self.position)
-
-
