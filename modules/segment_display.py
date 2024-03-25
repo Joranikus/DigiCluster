@@ -1,94 +1,54 @@
-# segment_display.py
+import pygame
 from modules.stuff import ImageSprite
-
-SEGMENT_IMAGES = {
-    'A': 'path/to/seg_a.png', # Top
-    'B': 'path/to/seg_b.png', # Top-right
-    'C': 'path/to/seg_c.png', # Bottom-right   
-    'D': 'path/to/seg_d.png', # Bottom
-    'E': 'path/to/seg_e.png', # Bottom-left
-    'F': 'path/to/seg_f.png', # Top-left
-    'G': 'path/to/seg_g.png'  # Center
-}
-
-class SevenSegmentDisplay:
-    # ... (include the full SevenSegmentDisplay class as previously defined)
-
-    def set_time(self, hour, minute):
-        # Format the hour and minute to always have two digits
-        hour_str = f"{hour:02d}"
-        minute_str = f"{minute:02d}"
-
-        # Set the time on the individual digits
-        self.set_digit(0, hour_str[0])  # First digit of the hour
-        self.set_digit(1, hour_str[1])  # Second digit of the hour
-        self.set_digit(2, minute_str[0])  # First digit of the minute
-        self.set_digit(3, minute_str[1])  # Second digit of the minute
-
-    def set_digit(self, digit_position, number):
-        # Activate the segments for the specified digit
-        segments_to_activate = self.numbers[number]
-        for segment in self.segments:
-            if segment in segments_to_activate:
-                self.segments[segment].activate()
-            else:
-                self.segments[segment].deactivate()
-
-    def draw(self, screen):
-        # Draw each digit
-        for i in range(4):
-            self.draw_digit(screen, i)
-
-        # Optionally, draw the colon if you have a separate image for it
-        # self.draw_colon(screen)
-
-    def draw_digit(self, screen, digit_position):
-        # Draw the active segments for the digit
-        for segment_id, sprite in self.segments.items():
-            if sprite.active:
-                # Calculate the absolute position for each segment
-                absolute_position = (self.position[0] + sprite.position[0], 
-                                     self.position[1] + sprite.position[1])
-                sprite.draw(screen)
-
-
+from datetime import datetime
 
 class SevenSegmentClock:
-    CLOCK_SEGMENT_IMAGES = {
-        'A': 'path/to/seg_a.png',           # Top
-        'B': 'path/to/seg_b.png',           # Top-right
-        'C': 'path/to/seg_c.png',           # Bottom-right   
-        'D': 'path/to/seg_d.png',           # Bottom
-        'E': 'path/to/seg_e.png',           # Bottom-left
-        'F': 'path/to/seg_f.png',           # Top-left
-        'G': 'path/to/seg_g.png',           # Center
-        'COLON': 'path/to/seg_colon.png'    # Colon between second and third digit
-    }
+    # Default paths for digit and colon images
+    DEFAULT_DIGIT_ASSETS_FOLDERS = [
+        'images/clock/digit_1',
+        'images/clock/digit_2',
+        'images/clock/digit_3',
+        'images/clock/digit_4'
+    ]
+    DEFAULT_COLON_ASSET_PATH = 'images/clock/colon.png'
 
-    def __init__(self, position=(0, 0), segment_paths=None):
-        if segment_paths is None:
-            segment_paths = self.CLOCK_SEGMENT_IMAGES  # Use the class variable if no custom paths are provided
+    def __init__(self, position=(0, 0), folders=None, colon_path=None):
+        # Use provided folders and colon_path if given, otherwise use the default constants
+        digit_folders = folders if folders is not None else self.DEFAULT_DIGIT_ASSETS_FOLDERS
+        colon_asset_path = colon_path if colon_path is not None else self.DEFAULT_COLON_ASSET_PATH
 
+        self.digit_images = []
+        for folder in digit_folders:
+            # Load images named '0.png' to '9.png' for each digit
+            images = [pygame.image.load(f"{folder}/{i}.png") for i in range(10)]
+            self.digit_images.append(images)
+
+        # Load the colon image
+        self.colon_image = pygame.image.load(colon_asset_path)
+
+        # Store the position where the clock will be drawn
         self.position = position
-        self.digit_displays = [SevenSegmentDisplay({k: v for k, v in segment_paths.items() if k != 'COLON'}, self.calculate_digit_position(i)) for i in range(4)]
-        self.colon_image = ImageSprite(segment_paths['COLON'], self.calculate_colon_position())
 
-    def calculate_digit_position(self, digit_index):
-        # Your existing implementation
-        ...
+        # Initialize digits to midnight
+        self.digits = [0, 0, 0, 0]  # Representing HHMM
 
-    def calculate_colon_position(self):
-        # Your existing implementation or static position
-        return (self.position[0] + some_x_offset, self.position[1] + some_y_offset)
-
-    def set_time(self, hour, minute):
-        # Your existing implementation
-        ...
-
-    def draw(self, screen):
-        # Draw each digit
-        for digit_display in self.digit_displays:
-            digit_display.draw(screen)
+    def set_time_now(self):
+        # Fetch the current local time
+        now = datetime.now()
+        # Set the clock to the current time
+        self.set_time(now.hour, now.minute)
         
-        # Draw the colon
-        self.colon_image.draw(screen)
+    def set_time(self, hours, minutes):
+        # Update the digits list with the new time, ensuring two digits for hours and minutes
+        self.digits = [hours // 10, hours % 10, minutes // 10, minutes % 10]
+
+    def draw(self, surface):
+        # Since the images are pre-positioned, draw each digit at the same position
+        for i, digit in enumerate(self.digits):
+            # Select the correct image for the current digit
+            image = self.digit_images[i][digit]
+            surface.blit(image, self.position)
+
+            # If i is 1, it means we just drew the second digit of the hours, so draw the colon next
+            if i == 1:
+                surface.blit(self.colon_image, self.position)

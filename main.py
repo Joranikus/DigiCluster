@@ -20,8 +20,9 @@ MFA_BACKGROUND = PlaceObject('images/mfa/mfa_background.png')
 LIGHTS_BACKGROUND = PlaceObject('images/lights/lights_background.png')
 CLOCK_BACKGROUND = PlaceObject('images/clock/clock_background.png')
 BARS_BACKGROUND = PlaceObject('images/bars/bars_background.png')
+
 # Layer 3 Foreground Objects
-# For a gauge that uses single image mode (e.g., OilPressureGauge)
+# Gauges
 oil_pressure_gauge = Gauge('images/bars/oil_pressure/oil_pressure_', 
                            position=(0,0), min_value=0, max_value=5, 
                            single_image_mode=True
@@ -42,6 +43,9 @@ rpm_gauge = RPMGauge('images/rpm/',
                            position=(0,0), min_value=0, max_value=7000, 
                            max_bars=70
                            )
+
+# Clock
+seven_segment_clock = SevenSegmentClock()
 
 #seven_segment_clock = SevenSegmentClock(position=(x, y))  # Add necessary arguments
 #rpm_gauge = RPMGauge(base_image_path='path/to/rpm/', positions=[(x1, y1), (x2, y2), ...])
@@ -76,13 +80,9 @@ while running:
     turbo_pressure_gauge.draw(screen)
     rpm_gauge.draw(screen)
 
+    seven_segment_clock.set_time_now()
+    seven_segment_clock.draw(screen)
 
-
-    # Update the states of your dynamic components based on your application's logic
-    # For demonstration, let's say we update the seven-segment clock with the current time
-    #now = pygame.time.get_ticks()  # Example: Use the current ticks to simulate time
-    #seven_segment_clock.set_time(now // 60000 % 24, now // 1000 % 60)  # Simulated hh:mm format
-    #seven_segment_clock.draw(screen)
 
     # Update the RPM gauge similarly
     #rpm_gauge.set_rpm(7200)  # Set this based on your application's state
