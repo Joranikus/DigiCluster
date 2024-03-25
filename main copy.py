@@ -38,7 +38,7 @@ def draw_fuel_text():
 
 def draw_mfa():
     WINDOW.blit(MFA, MFABG_XY)
-    #   Draw mfa display
+    #   Draw MFA display
     text = digital_font.render(str(outside_temp_status), True, NEON_GREEN)
     #   Enables the text to be right center aligned
     text_rect = text.get_rect()

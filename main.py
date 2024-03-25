@@ -19,7 +19,7 @@ BACKGROUND = PlaceObject('images/background.png')
 
 #Layer 2 Background Objects
 RPM_BACKGROUND = PlaceObject('images/rpm/rpm_background.png')  # Assuming you use the Background class for simplicity
-MFA_BACKGROUND = PlaceObject('images/mfa/mfa_background.png')
+MFA_BACKGROUND = PlaceObject('images/MFA/mfa_background.png')
 LIGHTS_BACKGROUND = PlaceObject('images/lights/lights_background.png')
 CLOCK_BACKGROUND = PlaceObject('images/clock/clock_background.png')
 BARS_BACKGROUND = PlaceObject('images/bars/bars_background.png')
