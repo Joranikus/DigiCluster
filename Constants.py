@@ -20,7 +20,7 @@ DARK_GREY = (9, 52, 50)         #   background of the digits (for the 7segment a
 #   Font Details
 FONT_PATH = "fonts/DSEG7Classic-Bold.ttf"
 FONT_LARGE = 174    #   Speedo size
-FONT_MEDIUM = 94    #   Clock, MFA, Fuel size
+FONT_MEDIUM = 94    #   Clock, mfa, Fuel size
 FONT_SMALL = 67     #   Odo Size
 
 #   Locations for gauge graphics, each has the same start XY but builds upon it, check images folder
