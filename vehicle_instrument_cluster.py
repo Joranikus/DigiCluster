@@ -1,103 +1,124 @@
 import pygame
 
-class SevenSegmentDisplay:
-    def __init__(self, position=(0,0), size=1):
-        self.position = position
-        self.size = size
-        # Load the images for each segment
-        self.segments_images = {
-            'A': pygame.image.load('seg-a.png'),
-            'B': pygame.image.load('seg-b.png'),
-            'C': pygame.image.load('seg-c.png'),
-            'D': pygame.image.load('seg-d.png'),
-            'E': pygame.image.load('seg-e.png'),
-            'F': pygame.image.load('seg-f.png'),
-            'G': pygame.image.load('seg-g.png')
-        }       
-        self.segment_offsets = {
-            'A': (0, 0),
-            'B': (0, 0),  # Example offset
-            'C': (0, 0),  # Example offset
-            'D': (0, 0),  # Example offset
-            'E': (0, 0),  # Example offset
-            'F': (0, 0),  # Example offset
-            'G': (0, 0),   # Example offset
-        }
-        
-        # Define which segments are on for each number
-        self.numbers = {
-            '0': ['A', 'B', 'C', 'D', 'E', 'F'],
-            '1': ['B', 'C'],
-            '2': ['A', 'B', 'G', 'E', 'D'],
-            '3': ['A', 'B', 'C', 'D', 'G'],
-            '4': ['B', 'C', 'F', 'G'],
-            '5': ['A', 'C', 'D', 'F', 'G'],
-            '6': ['A', 'C', 'D', 'E', 'F', 'G'],
-            '7': ['A', 'B', 'C'],
-            '8': ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
-            '9': ['A', 'B', 'C', 'D', 'F', 'G'],
-            }
+class ImageSprite:
+    """
+    A class to represent and handle an image as a sprite in Pygame.
     
-    def set_position(self, new_position):
-        # Update the position of the display
-        self.position = new_position
+    Attributes:
+        image (Surface): The Pygame surface containing the image of the sprite.
+        position (tuple): The (x, y) position where the sprite will be drawn on the screen.
+    """
+    
+    def __init__(self, image_path, position=(0, 0)):
+        """
+        Initialize the sprite with an image and its position.
 
-    def set_size(self, new_size):
-        # Update the size of the display
-        self.size = new_size
-
-    set segment_offsets
-    def draw(self, screen, number):
-        segments_to_draw = self.numbers[str(number)]
-        for segment in segments_to_draw:
-            segment_image = self.segments_images[segment]
-            offset = self.segment_offsets[segment]
-            # Calculate the absolute position for each segment
-            absolute_position = (self.position[0] + offset[0], self.position[1] + offset[1])
-            screen.blit(segment_image, absolute_position)
-
-class GaugeBar:
-    def __init__(self, image_path, position):
+        Args:
+            image_path (str): The path to the image file.
+            position (tuple): The (x, y) coordinates for the sprite's position on the screen.
+        """
         self.image = pygame.image.load(image_path)
         self.position = position
-        self.active = False  # By default, bars are not active (not lit up)
 
     def draw(self, screen):
-        if self.active:
-            screen.blit(self.image, self.position)
-            
+        """
+        Draw the sprite onto the screen at its current position.
+
+        Args:
+            screen (Surface): The Pygame screen surface where the sprite will be drawn.
+        """
+        screen.blit(self.image, self.position)
+
 class RPMGauge:
+    """
+    A class representing an RPM gauge, managing the activation and display of individual gauge bars.
+    
+    Attributes:
+        bars (list): A list of ImageSprite instances representing each bar in the gauge.
+    """
+    
     def __init__(self, positions, image_path):
-        self.bars = [GaugeBar(image_path, pos) for pos in positions]
+        """
+        Initialize the RPM gauge with positions and image for its bars.
+
+        Args:
+            positions (list): A list of (x, y) tuples representing the positions of individual bars.
+            image_path (str): The path to the image file used for each bar.
+        """
+        self.bars = [ImageSprite(image_path, pos) for pos in positions]
 
     def set_rpm(self, rpm):
-        # Assuming rpm is a value between 1 and 7
-        # Activate the bars up to the rpm value and deactivate the rest
+        """
+        Set the RPM value for the gauge, which determines the number of active bars.
+
+        Args:
+            rpm (int): The RPM value to be displayed by the gauge.
+        """
         for i, bar in enumerate(self.bars):
             bar.active = i < rpm
 
     def draw(self, screen):
+        """
+        Draw the gauge on the screen, showing the active bars based on the current RPM.
+
+        Args:
+            screen (Surface): The Pygame screen surface where the gauge will be drawn.
+        """
         for bar in self.bars:
-            bar.draw(screen)
+            if bar.active:
+                bar.draw(screen)
 
+class VerticalBarGauge:
+    """
+    A class representing a vertical bar gauge display in Pygame.
 
-if "__main__" == __name__:
-    # Pygame setup
-    pygame.init()
-    screen = pygame.display.set_mode((800, 600))
+    Attributes:
+        max_bars (int): The maximum number of bars the gauge can display.
+        position (tuple): The (x, y) position of the bottom bar on the screen.
+        min_value (float): The minimum value the gauge can represent.
+        max_value (float): The maximum value the gauge can represent.
+        bar_image (Surface): The Pygame surface containing the image of a bar.
+        bar_height (int): The height of a single bar.
+        bars (list): A list of boolean values indicating the active state of each bar.
+    """
 
-    # Create a SevenSegmentDisplay object at position (100, 100)
-    display = SevenSegmentDisplay(position=(100, 100))
+    def __init__(self, image_path, max_bars, position, min_value, max_value):
+        """
+        Args:
+            image_path (str): The file path to the bar image.
+            max_bars (int): The total number of bars in the gauge.
+            position (tuple): The position of the gauge on the screen.
+            min_value (float): The minimum value the gauge can represent.
+            max_value (float): The maximum value the gauge can represent.
+        """
+        self.max_bars = max_bars
+        self.position = position
+        self.min_value = min_value
+        self.max_value = max_value
+        self.bar_image = pygame.image.load(image_path)
+        self.bar_height = self.bar_image.get_height()
+        self.bars = [False] * max_bars  # Initialize all bars to 'off'
 
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
+    def set_value(self, value):
+        """
+        Set the value of the gauge, which will update the active state of the bars.
 
-        screen.fill((0, 0, 0))  # Clear the screen with black
-        display.draw(screen, 3)  # Draw the number '3'
-        
-        pygame.display.flip()
+        Args:
+            value (float): The current value to represent on the gauge.
+                           Must be between min_value and max_value.
+        """
+        normalized_value = (value - self.min_value) / (self.max_value - self.min_value)
+        num_active_bars = int(normalized_value * self.max_bars)
+        self.bars = [i < num_active_bars for i in range(self.max_bars)]
 
-    pygame.quit()
+    def draw(self, screen):
+        """
+        Draw the active bars on the screen.
+
+        Args:
+            screen (Surface): The Pygame screen surface where the gauge will be drawn.
+        """
+        for i, active in enumerate(self.bars):
+            if active:
+                y_position = self.position[1] - (i * self.bar_height)
+                screen.blit(self.bar_image, (self.position[0], y_position))
