@@ -2,10 +2,8 @@ import pygame
 # Assuming Background, SevenSegmentClock, RPMGauge, etc., are defined in the modules package
 
 from modules.segment_display import SevenSegmentClock, BatteryVoltageDisplay
-# from modules.rpm_gauge import RPMGauge
-from modules.gauges import Gauge, RPMGauge
+from modules.gauges import Gauge, RPMGauge, RpmGaugeAnimation
 from modules.stuff import ImageSprite, PlaceObject, LightsManager
-# Other imports as necessary
 
 pygame.init()
 screen = pygame.display.set_mode((800, 480))  # Adjust to your desired resolution
@@ -43,6 +41,9 @@ rpm_gauge = RPMGauge('images/rpm/',
                            position=(0,0), min_value=0, max_value=7000, 
                            max_bars=70
                            )
+# Initialize the RPM gauge animation
+rpm_animation = RpmGaugeAnimation(rpm_gauge)
+rpm_animation.start_animation()  # Start the animation
 
 # Clock
 seven_segment_clock = SevenSegmentClock()
@@ -83,6 +84,10 @@ while running:
     fuel_gauge.draw(screen)
     coolant_temp_gauge.draw(screen)
     turbo_pressure_gauge.draw(screen)
+
+        # Update and draw the RPM gauge animation
+    rpm_animation.update()
+    rpm_animation.draw(screen)
     rpm_gauge.draw(screen)
 
     seven_segment_clock.set_time_now()

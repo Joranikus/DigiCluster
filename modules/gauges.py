@@ -76,3 +76,39 @@ class RPMGauge(Gauge):
         """
         if self.bar_image:  # Ensure there is an image to draw
             screen.blit(self.bar_image, self.position)
+
+import time
+
+class RpmGaugeAnimation:
+    def __init__(self, rpm_gauge, animation_duration=3):
+        self.rpm_gauge = rpm_gauge
+        self.animation_duration = animation_duration
+        self.start_time = None
+        self.startup_animation_active = False
+
+    def start_animation(self):
+        self.start_time = time.time()
+        self.startup_animation_active = True
+
+    def update(self):
+        if not self.startup_animation_active or self.start_time is None:
+            return
+
+        current_time = time.time()
+        elapsed_time = current_time - self.start_time
+
+        if elapsed_time <= self.animation_duration:
+            progress = elapsed_time / self.animation_duration
+
+            if progress <= 0.5:
+                value = self.rpm_gauge.min_value + (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * (progress * 2)
+            else:
+                value = self.rpm_gauge.max_value - (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * ((progress - 0.5) * 2)
+
+            self.rpm_gauge.set_value(value)
+        else:
+            self.startup_animation_active = False
+
+    def draw(self, surface):
+        if self.startup_animation_active:
+            self.rpm_gauge.draw(surface)
