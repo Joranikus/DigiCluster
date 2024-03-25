@@ -43,7 +43,10 @@ class Gauge:
 class RPMGauge(Gauge):
     def __init__(self, asset_path, position, min_value, max_value, max_bars):
         super().__init__(asset_path, position, min_value, max_value, max_bars, single_image_mode=True)
-        self.step_value = (max_value - min_value) / (max_bars - 1)  # Calculate the step value based on the range and number of bars
+        self.step_value = (max_value - min_value) / (max_bars - 1)
+
+        # Preload all images for the gauge animation
+        self.preloaded_images = [pygame.image.load(f'{self.asset_path}rpm_{i * 100}.png') for i in range(1, max_bars + 1)]
 
     def set_value(self, value):
         """

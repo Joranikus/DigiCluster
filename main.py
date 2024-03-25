@@ -42,7 +42,7 @@ rpm_gauge = RPMGauge('images/rpm/',
                            max_bars=70
                            )
 # Initialize the RPM gauge animation
-rpm_animation = RpmGaugeAnimation(rpm_gauge)
+rpm_animation = RpmGaugeAnimation(rpm_gauge, animation_duration=2)
 rpm_animation.start_animation()  # Start the animation
 
 # Clock
@@ -113,8 +113,9 @@ while running:
 
     # Update the screen
     pygame.display.flip()
+    
 
     # Cap the framerate
-    pygame.time.Clock().tick(60)
+    pygame.time.Clock().tick(120)
 
 pygame.quit()
