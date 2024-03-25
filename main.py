@@ -6,7 +6,12 @@ from modules.gauges import Gauge, RPMGauge, RpmGaugeAnimation
 from modules.stuff import ImageSprite, PlaceObject, LightsManager
 
 pygame.init()
-screen = pygame.display.set_mode((800, 480))  # Adjust to your desired resolution
+# Set display flags for fullscreen mode
+fullscreen_flags = pygame.FULLSCREEN
+
+# Set the display mode to match the screen resolution
+screen_width, screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
+screen = pygame.display.set_mode((screen_width, screen_height), fullscreen_flags)
 
 # Initialize the layers
 #Layer 1 Background
