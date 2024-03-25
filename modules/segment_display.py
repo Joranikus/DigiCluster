@@ -1,4 +1,5 @@
-from stuff import ImageSprite
+# segment_display.py
+from modules.stuff import ImageSprite
 
 SEGMENT_IMAGES = {
     'A': 'path/to/seg_a.png', # Top

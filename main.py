@@ -1,123 +1,61 @@
 import pygame
-from datetime import datetime
-from rpm import RpmGauge
-from AuxGauge import AuxGauge
-from Constants import *
-from Variables import *
+# Assuming Background, SevenSegmentClock, RPMGauge, etc., are defined in the modules package
+
+from modules.segment_display import SevenSegmentClock
+from modules.rpm_gauge import RPMGauge
+from modules.gauges import VerticalBarGauge
+from modules.stuff import ImageSprite, PlaceObject
+# Other imports as necessary
 
 pygame.init()
+screen = pygame.display.set_mode((800, 480))  # Adjust to your desired resolution
 
-pygame.display.set_icon(program_icon)
-pygame.display.set_caption(project_name + digifiz_ver)
+# Initialize the layers
+#Layer 1 Background
+BACKGROUND = PlaceObject('images/background.png')
 
-odo_font = pygame.font.Font(FONT_PATH, FONT_SMALL)
-digital_font = pygame.font.Font(FONT_PATH, FONT_MEDIUM)
-font_speedunits = pygame.font.Font(FONT_PATH, FONT_LARGE)
+#Layer 2 Background Objects
+RPM_BACKGROUND = PlaceObject('images/rpm/rpm_background.png')  # Assuming you use the Background class for simplicity
+MFA_BACKGROUND = PlaceObject('images/mfa/mfa_background.png')
+LIGHTS_BACKGROUND = PlaceObject('images/lights/lights_background.png')
+CLOCK_BACKGROUND = PlaceObject('images/clock/clock_background.png')
+BARS_BACKGROUND = PlaceObject('images/bars/bars_background.png')
+# Layer 3 Foreground Objects
 
-clock = pygame.time.Clock()
+#seven_segment_clock = SevenSegmentClock(position=(x, y))  # Add necessary arguments
+#rpm_gauge = RPMGauge(base_image_path='path/to/rpm/', positions=[(x1, y1), (x2, y2), ...])
 
-boost = AuxGauge(BOOST_XY, 19)
-egt = AuxGauge(EGT_XY, 19)
-coolant = AuxGauge(COOLANT_XY, 19)
-oilpressure = AuxGauge(OILPRESSURE_XY, 19)
-rpm = RpmGauge(RPM_XY, 50)
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
 
-indicator_images = []
+    # Layer 1: Draw background
+    BACKGROUND.draw(screen)
 
-for i in range(10):
-    image = pygame.image.load(("images/indicators/ind" + str(i) + ".png"))
-    indicator_images.append(image)
+    # Layer 2: Draw components in "off" state
+    RPM_BACKGROUND.draw(screen)
+    MFA_BACKGROUND.draw(screen)
+    LIGHTS_BACKGROUND.draw(screen)
+    CLOCK_BACKGROUND.draw(screen)
+    BARS_BACKGROUND.draw(screen)
 
-def draw_fuel_text():
-    #global digital_font
-    digital_fuel = fuel_status
-    fuel_text = digital_font.render(str(int(digital_fuel)), True, NEON_GREEN)
-    text_rect = fuel_text.get_rect()
-    text_rect.midright = 1717, 667
-    WINDOW.blit(fuel_text, text_rect)
+    # Layer 3: Draw dynamic components
+    # Update the states of your dynamic components based on your application's logic
+    # For demonstration, let's say we update the seven-segment clock with the current time
+    #now = pygame.time.get_ticks()  # Example: Use the current ticks to simulate time
+    #seven_segment_clock.set_time(now // 60000 % 24, now // 1000 % 60)  # Simulated hh:mm format
+    #seven_segment_clock.draw(screen)
 
-def draw_mfa():
-    WINDOW.blit(MFA, MFABG_XY)
-    #   Draw MFA display
-    text = digital_font.render(str(outside_temp_status), True, NEON_GREEN)
-    #   Enables the text to be right center aligned
-    text_rect = text.get_rect()
-    text_rect.midright = MFA_XY
-    WINDOW.blit(text, text_rect)
+    # Update the RPM gauge similarly
+    #rpm_gauge.set_rpm(7200)  # Set this based on your application's state
+    #rpm_gauge.draw(screen)
 
-def draw_clock():
-    '''
-    Drawing the clock - currently only 24hr. I'm sure its easy to adapt to 12hr.
-    '''
-    now = datetime.now()
-    bgclock_text = digital_font.render("00:00", True, DARK_GREY)
-    WINDOW.blit(bgclock_text, CLOCK_XY)
-    digital_text = now.strftime('%H:%M')
-    text = digital_font.render(digital_text, True, NEON_GREEN)
-    WINDOW.blit(text, CLOCK_XY)
+    # Update the screen
+    pygame.display.flip()
 
-def draw_speedometer_text():
-    ''' Speedometer Font Testing '''
-    global speed_status
-    global font_speedunits
-    speedtext = font_speedunits.render(str(speed_status), True, NEON_YELLOW)
-    text_rect = speedtext.get_rect()
-    text_rect.midright = SPEEDO_XY
-    WINDOW.blit(speedtext, text_rect)
+    # Cap the framerate
+    pygame.time.Clock().tick(60)
 
-def draw_indicators():
-    if illumination_state == 1:
-        WINDOW.blit(indicator_images[0], (45, 460))
-    if foglight_state == 1:
-        WINDOW.blit(indicator_images[1], (185, 460))
-    if defog_state == 1:
-        WINDOW.blit(indicator_images[2], (325, 460))
-    if highbeam_state == 1:
-        WINDOW.blit(indicator_images[3], (465, 460))
-    if leftturn_state == 1:
-        WINDOW.blit(indicator_images[4], (605, 460))
-    if rightturn_state == 1:
-        WINDOW.blit(indicator_images[5], (1220, 460))
-    if brakewarn_state == 1:
-        WINDOW.blit(indicator_images[6], (1360, 460))
-    if oillight_state == 1:
-        WINDOW.blit(indicator_images[7], (1500, 460))
-    if alt_state == 1:
-        WINDOW.blit(indicator_images[8], (1640, 460))
-    if glow_state == 1:
-        WINDOW.blit(indicator_images[9], (1780, 460))
-
-    #   To highlight the fuel reserve indicator (factory is at 7 litres
-    if fuel_status <= 7:
-        WINDOW.blit(fuelres_on, (1795, 616))
-    else:
-        WINDOW.blit(fuelres_off, (1795, 616))
-
-def draw_digifiz():
-    WINDOW.blit(BACKGROUND, (0, 0))
-    rpm.show(WINDOW)
-    coolant.show(WINDOW)
-    boost.show(WINDOW)
-    oilpressure.show(WINDOW)
-    egt.show(WINDOW)
-    draw_indicators()
-    draw_clock()
-    draw_mfa()
-    draw_fuel_text()
-    draw_speedometer_text()
-
-def main():
-
-    run = True
-    while run:
-        clock.tick(FPS)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-
-        draw_digifiz()
-        pygame.display.update()
-    pygame.quit()
-
-if __name__ == "__main__":
-    main()
+pygame.quit()
