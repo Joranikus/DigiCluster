@@ -1,10 +1,10 @@
 import pygame
 # Assuming Background, SevenSegmentClock, RPMGauge, etc., are defined in the modules package
 
-from modules.segment_display import SevenSegmentClock
+from modules.segment_display import SevenSegmentClock, BatteryVoltageDisplay
 # from modules.rpm_gauge import RPMGauge
 from modules.gauges import Gauge, RPMGauge
-from modules.stuff import ImageSprite, PlaceObject
+from modules.stuff import ImageSprite, PlaceObject, LightsManager
 # Other imports as necessary
 
 pygame.init()
@@ -47,6 +47,11 @@ rpm_gauge = RPMGauge('images/rpm/',
 # Clock
 seven_segment_clock = SevenSegmentClock()
 
+lights_manager = LightsManager()  # Adjust the position as needed
+battery_voltage_display = BatteryVoltageDisplay()
+
+
+
 #seven_segment_clock = SevenSegmentClock(position=(x, y))  # Add necessary arguments
 #rpm_gauge = RPMGauge(base_image_path='path/to/rpm/', positions=[(x1, y1), (x2, y2), ...])
 
@@ -83,6 +88,19 @@ while running:
     seven_segment_clock.set_time_now()
     seven_segment_clock.draw(screen)
 
+    lights_manager.set_value('coolant_warning', True)
+    lights_manager.set_value('high_beam', True)
+    lights_manager.set_value('low_beam', True)
+    lights_manager.set_value('oil_warning', True)
+    lights_manager.set_value('parking_lights', True)
+    lights_manager.set_value('turn_signal', True)
+
+
+    lights_manager.set_value('battery_warning', True)
+    lights_manager.draw(screen)
+
+    battery_voltage_display.set_value(12.0)
+    battery_voltage_display.draw(screen)
 
     # Update the RPM gauge similarly
     #rpm_gauge.set_rpm(7200)  # Set this based on your application's state
