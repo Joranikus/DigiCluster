@@ -5,9 +5,9 @@ from modules.visual_elements import PlaceObject, LightsManager
 
 class Dashboard():
     ANIMATION_DURATION = 2
-    ANIMATION_UPDATE_INTERVAL = 10
+    ANIMATION_UPDATE_INTERVAL = 60
     ANIMATION_START_DELAY = 3
-    FAST_UPDATE_INTERVAL = 70  # Update fast-changing components every 100 milliseconds (0.1 second)
+    FAST_UPDATE_INTERVAL = 60  # Update fast-changing components every 100 milliseconds (0.1 second)
     SLOW_UPDATE_INTERVAL = 1500  # Update slower-changing components every 1000 milliseconds (1 second)
 
     def __init__(self, debug_mode):
@@ -42,7 +42,6 @@ class Dashboard():
         self.last_animation_update_time = pygame.time.get_ticks()
         self.last_fast_update_time = pygame.time.get_ticks()
         self.last_slow_update_time = pygame.time.get_ticks()
-        self.animation_start_time = pygame.time.get_ticks() + self.ANIMATION_START_DELAY  # Calculate animation start time
 
     def init_backgrounds(self):
                 # Initialize background layers
@@ -153,11 +152,9 @@ class Dashboard():
                 self.last_slow_update_time = current_time
 
             # Check if it's time to start the animation
-            if current_time >= self.animation_start_time:
-                # Update animation if the delay has passed
-                if current_time - self.last_animation_update_time > self.ANIMATION_UPDATE_INTERVAL:
-                    self.update_animation()
-                    self.last_animation_update_time = current_time
+            if current_time >= self.last_animation_update_time:
+                self.update_animation()
+                self.last_animation_update_time = current_time
 
             self.draw_objects()
             pygame.display.flip()
