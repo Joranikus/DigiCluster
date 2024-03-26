@@ -39,7 +39,7 @@ class Gauge:
                 if bar.active:
                     y_position = self.position[1] - (i * self.bar_height)
                     screen.blit(self.bar_image, (self.position[0], y_position))
-                    
+
 def calculate_rpm_value(self, progress):
     """
     Calculate the RPM value based on the current progress of the animation.
@@ -75,24 +75,22 @@ class RPMGauge(Gauge):
         # Set the current bar image to the preloaded image
         self.bar_image = self.preloaded_images[new_rpm_index]
 
-def update(self):
-    if not self.startup_animation_active or self.start_time is None:
-        return
+    def update(self):
+        if not self.startup_animation_active or self.start_time is None:
+            return
 
-    current_time = time.time()
-    elapsed_time = current_time - self.start_time
+        current_time = time.time()
+        delta_time = current_time - self.last_update_time
+        self.last_update_time = current_time
+        self.elapsed_time += delta_time
 
-    if elapsed_time <= self.animation_duration:
-        progress = elapsed_time / self.animation_duration
-        # Use the calculate_rpm_value function to determine the RPM based on the progress
-        value = self.calculate_rpm_value(progress)
-
-        # Only update the gauge if the value has changed significantly
-        if not hasattr(self.rpm_gauge, 'current_value') or abs(self.rpm_gauge.current_value - value) >= 1:  # Assuming 1 RPM as the minimum significant change
-            self.rpm_gauge.current_value = value
+        if self.elapsed_time <= self.animation_duration:
+            progress = self.elapsed_time / self.animation_duration
+            value = self.calculate_rpm_value(progress)
             self.rpm_gauge.set_value(value)
-    else:
-        self.startup_animation_active = False
+        else:
+            self.startup_animation_active = False
+
 
 
 

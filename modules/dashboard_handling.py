@@ -4,21 +4,18 @@ from modules.gauges import Gauge, RPMGauge, RpmGaugeAnimation
 from modules.visual_elements import PlaceObject, LightsManager
 
 class Dashboard():
-    def __init__(self):
-        # Initialize pygame
-        pygame.init()
-        
-        # Set the display mode to match the screen resolution
-        self.screen_width, self.screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
-        
-        # Desired transformation size
-        self.desired_height = 480
-        self.desired_width = 480
-        
-        # Initialize all objects
-        self.init_objects()
+    ANIMATION_DURATION=6
 
+    def __init__(self, debug_mode):
+        pygame.init()
+        if debug_mode:
+            screen_width, screen_height = 800, 480
+            self.screen = pygame.display.set_mode((screen_width, screen_height), pygame.HWSURFACE | pygame.DOUBLEBUF)
+        else:
+            screen_width, screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
+            self.screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)  # Fullscreen mode
+
+        self.init_objects()
         self.dynamic_data = {
             'oil_pressure': 3,
             'fuel_level': 50,
@@ -76,7 +73,7 @@ class Dashboard():
                             max_bars=70
                             )
         # Initialize the RPM gauge animation
-        self.rpm_animation = RpmGaugeAnimation(self.rpm_gauge, animation_duration=3)
+        self.rpm_animation = RpmGaugeAnimation(self.rpm_gauge, animation_duration=self.ANIMATION_DURATION)
         self.rpm_animation.start_animation()  # Start the animation
 
         # Clock
