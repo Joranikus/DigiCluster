@@ -34,9 +34,6 @@ class Dashboard():
             }
         }
 
-        # Start the RPM gauge animation
-        # self.rpm_animation.start_animation()
-
     
     def init_objects(self):
         # Initialize background layers

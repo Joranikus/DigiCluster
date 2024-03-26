@@ -91,9 +91,6 @@ class RPMGauge(Gauge):
         else:
             self.startup_animation_active = False
 
-
-
-
 import time
 class RpmGaugeAnimation:
     def __init__(self, rpm_gauge, animation_duration=3):
