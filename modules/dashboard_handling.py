@@ -6,6 +6,7 @@ from modules.visual_elements import PlaceObject, LightsManager
 class Dashboard():
     ANIMATION_DURATION = 2
     ANIMATION_UPDATE_INTERVAL = 10
+    ANIMATION_START_DELAY = 3
     FAST_UPDATE_INTERVAL = 70  # Update fast-changing components every 100 milliseconds (0.1 second)
     SLOW_UPDATE_INTERVAL = 1500  # Update slower-changing components every 1000 milliseconds (1 second)
 
@@ -41,7 +42,7 @@ class Dashboard():
         self.last_animation_update_time = pygame.time.get_ticks()
         self.last_fast_update_time = pygame.time.get_ticks()
         self.last_slow_update_time = pygame.time.get_ticks()
-
+        self.animation_start_time = pygame.time.get_ticks() + self.ANIMATION_START_DELAY  # Calculate animation start time
 
     def init_backgrounds(self):
                 # Initialize background layers
@@ -79,7 +80,7 @@ class Dashboard():
                             max_bars=70
                             )
         # Initialize the RPM gauge animation
-        self.rpm_animation = RpmGaugeAnimation(self.rpm_gauge, animation_duration=self.ANIMATION_DURATION)
+        self.rpm_animation = RpmGaugeAnimation(self.rpm_gauge, animation_duration=self.ANIMATION_DURATION, start_delay=self.ANIMATION_START_DELAY)
         self.rpm_animation.start_animation()  # Start the animation
 
         # Clock
@@ -113,11 +114,10 @@ class Dashboard():
 
     def update_animation(self):
         # Update animation
+
         self.rpm_animation.update()
 
     def update_fast_objects(self):
-        # Update fast-changing components here
-        self.rpm_animation.update()
         self.rpm_gauge.set_value(self.dynamic_data['rpm_value'])
         for light, state in self.dynamic_data['lights'].items():
             self.lights_manager.set_value(light, state)
@@ -140,6 +140,8 @@ class Dashboard():
                 if event.type == pygame.QUIT:
                     running = False
 
+
+
             # Update fast-changing components
             if current_time - self.last_fast_update_time > self.FAST_UPDATE_INTERVAL:
                 self.update_fast_objects()
@@ -150,10 +152,12 @@ class Dashboard():
                 self.update_slow_objects()
                 self.last_slow_update_time = current_time
 
-            # Update animation
-            if current_time - self.last_animation_update_time > self.ANIMATION_UPDATE_INTERVAL:
-                self.update_animation()
-                self.last_animation_update_time = current_time
+            # Check if it's time to start the animation
+            if current_time >= self.animation_start_time:
+                # Update animation if the delay has passed
+                if current_time - self.last_animation_update_time > self.ANIMATION_UPDATE_INTERVAL:
+                    self.update_animation()
+                    self.last_animation_update_time = current_time
 
             self.draw_objects()
             pygame.display.flip()

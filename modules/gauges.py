@@ -93,35 +93,41 @@ class RPMGauge(Gauge):
 
 import time
 class RpmGaugeAnimation:
-    def __init__(self, rpm_gauge, animation_duration=3):
+    def __init__(self, rpm_gauge, animation_duration=3, start_delay=2):
         self.rpm_gauge = rpm_gauge
         self.animation_duration = animation_duration
+        self.start_delay = start_delay  # Delay in seconds before animation starts
         self.start_time = None
-        self.startup_animation_active = False
+        self.animation_started = False
 
     def start_animation(self):
         self.start_time = time.time()
-        self.startup_animation_active = True
 
     def update(self):
-        if not self.startup_animation_active or self.start_time is None:
-            return
+        if not self.animation_started:
+            current_time = time.time()
+            elapsed_time = current_time - self.start_time
 
-        current_time = time.time()
-        elapsed_time = current_time - self.start_time
+            if elapsed_time >= self.start_delay:
+                self.animation_started = True
 
-        if elapsed_time <= self.animation_duration:
-            progress = elapsed_time / self.animation_duration
+        if self.animation_started:
+            current_time = time.time()
+            elapsed_time = current_time - (self.start_time + self.start_delay)
 
-            if progress <= 0.5:
-                value = self.rpm_gauge.min_value + (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * (progress * 2)
+            if 0 <= elapsed_time <= self.animation_duration:
+                progress = elapsed_time / self.animation_duration
+
+                if progress <= 0.5:
+                    value = self.rpm_gauge.min_value + (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * (progress * 2)
+                else:
+                    value = self.rpm_gauge.max_value - (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * ((progress - 0.5) * 2)
+
+                self.rpm_gauge.set_value(value)
             else:
-                value = self.rpm_gauge.max_value - (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * ((progress - 0.5) * 2)
-
-            self.rpm_gauge.set_value(value)
-        else:
-            self.startup_animation_active = False
+                # Ensure that the animation stops at the end of its duration
+                self.animation_started = False
 
     def draw(self, surface):
-        if self.startup_animation_active:
+        if self.animation_started:
             self.rpm_gauge.draw(surface)
