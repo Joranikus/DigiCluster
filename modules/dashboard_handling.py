@@ -4,7 +4,10 @@ from modules.gauges import Gauge, RPMGauge, RpmGaugeAnimation
 from modules.visual_elements import PlaceObject, LightsManager
 
 class Dashboard():
-    ANIMATION_DURATION=6
+    ANIMATION_DURATION = 2
+    ANIMATION_UPDATE_INTERVAL = 10
+    FAST_UPDATE_INTERVAL = 50  # Update fast-changing components every 100 milliseconds (0.1 second)
+    SLOW_UPDATE_INTERVAL = 1500  # Update slower-changing components every 1000 milliseconds (1 second)
 
     def __init__(self, debug_mode):
         pygame.init()
@@ -14,8 +17,6 @@ class Dashboard():
         else:
             screen_width, screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
             self.screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)  # Fullscreen mode
-
-        self.init_objects()
         self.dynamic_data = {
             'oil_pressure': 3,
             'fuel_level': 50,
@@ -34,9 +35,16 @@ class Dashboard():
             }
         }
 
-    
-    def init_objects(self):
-        # Initialize background layers
+        self.init_backgrounds()
+        self.init_objects()
+
+        self.last_animation_update_time = pygame.time.get_ticks()
+        self.last_fast_update_time = pygame.time.get_ticks()
+        self.last_slow_update_time = pygame.time.get_ticks()
+
+
+    def init_backgrounds(self):
+                # Initialize background layers
         # Layer 1 Background
         self.BACKGROUND = PlaceObject('images/background.png')
 
@@ -47,6 +55,7 @@ class Dashboard():
         self.CLOCK_BACKGROUND = PlaceObject('images/clock/clock_background.png')
         self.BARS_BACKGROUND = PlaceObject('images/bars/bars_background.png')
 
+    def init_objects(self):
         # Layer 3 Foreground Objects
         # Gauges
         self.oil_pressure_gauge = Gauge('images/bars/oil_pressure/oil_pressure_',
@@ -101,36 +110,52 @@ class Dashboard():
         self.seven_segment_clock.draw(self.screen)
         self.lights_manager.draw(self.screen)
         self.battery_voltage_display.draw(self.screen)
-    
-    def update_objects(self):
-        # Update gauges with values from dynamic_data
+
+    def update_animation(self):
+        # Update animation
+        self.rpm_animation.update()
+
+    def update_fast_objects(self):
+        # Update fast-changing components here
+        self.rpm_animation.update()
+        self.rpm_gauge.set_value(self.dynamic_data['rpm_value'])
+        for light, state in self.dynamic_data['lights'].items():
+            self.lights_manager.set_value(light, state)
+        # Add more fast-updating objects if needed
+
+    def update_slow_objects(self):
+        # Update slow-changing components here
         self.oil_pressure_gauge.set_value(self.dynamic_data['oil_pressure'])
         self.fuel_gauge.set_value(self.dynamic_data['fuel_level'])
         self.coolant_temp_gauge.set_value(self.dynamic_data['coolant_temp'])
         self.turbo_pressure_gauge.set_value(self.dynamic_data['turbo_pressure'])
-        self.rpm_gauge.set_value(self.dynamic_data['rpm_value'])
         self.battery_voltage_display.set_value(self.dynamic_data['battery_voltage'])
-
-        # Update lights with values from dynamic_data
-        for light, state in self.dynamic_data['lights'].items():
-            self.lights_manager.set_value(light, state)
-
-        # Update the RPM gauge animation
-        self.rpm_animation.update()
-
-        # Update the clock
         self.seven_segment_clock.set_time_now()
 
     def run(self):
         running = True
         while running:
+            current_time = pygame.time.get_ticks()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+
+            # Update fast-changing components
+            if current_time - self.last_fast_update_time > self.FAST_UPDATE_INTERVAL:
+                self.update_fast_objects()
+                self.last_fast_update_time = current_time
             
-            self.update_objects()
+            # Update slower-changing components
+            if current_time - self.last_slow_update_time > self.SLOW_UPDATE_INTERVAL:
+                self.update_slow_objects()
+                self.last_slow_update_time = current_time
+
+            # Update animation
+            if current_time - self.last_animation_update_time > self.ANIMATION_UPDATE_INTERVAL:
+                self.update_animation()
+                self.last_animation_update_time = current_time
+
             self.draw_objects()
-            
             pygame.display.flip()
 
         pygame.quit()
