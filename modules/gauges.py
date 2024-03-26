@@ -11,7 +11,7 @@ class Gauge:
         self.asset_path = asset_path
         self.single_image_mode = single_image_mode  # Indicates whether the gauge uses single image mode
         self.current_bar_index = 1 if single_image_mode else None  # Track the current image index if in single image mode
-        self.bar_image = None if single_image_mode else pygame.image.load(f'{self.asset_path}{1}.png')  # Load the first image or None
+        self.bar_image = None if single_image_mode else pygame.image.load(f'{self.asset_path}{1}.png').convert_alpha()  # Load the first image or None
 
     def set_value(self, value):
         normalized_value = (value - self.min_value) / (self.max_value - self.min_value)
@@ -63,7 +63,7 @@ class RPMGauge(Gauge):
     def __init__(self, asset_path, position, min_value, max_value, max_bars):
         super().__init__(asset_path, position, min_value, max_value, max_bars, single_image_mode=True)
         self.step_value = (max_value - min_value) / (max_bars - 1)  # Defines the RPM increase per step
-        self.preloaded_images = [pygame.image.load(f'{asset_path}rpm_{i}00.png') for i in range(1, max_bars + 1)]
+        self.preloaded_images = [pygame.image.load(f'{asset_path}rpm_{i}00.png').convert_alpha() for i in range(1, max_bars + 1)]
 
     def set_value(self, value):
         # Calculate the appropriate index from the value

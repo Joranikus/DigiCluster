@@ -37,6 +37,7 @@ class Dashboard():
         }
 
         self.init_backgrounds()
+        self.draw_backgrounds()
         self.init_objects()
 
         self.last_animation_update_time = pygame.time.get_ticks()
@@ -88,7 +89,7 @@ class Dashboard():
         self.lights_manager = LightsManager()  # Adjust the position as needed
         self.battery_voltage_display = BatteryVoltageDisplay()
 
-    def draw_objects(self):
+    def draw_backgrounds(self):
         # Layer 1: Draw background
         self.BACKGROUND.draw(self.screen)
 
@@ -98,6 +99,8 @@ class Dashboard():
         self.LIGHTS_BACKGROUND.draw(self.screen)
         self.CLOCK_BACKGROUND.draw(self.screen)
         self.BARS_BACKGROUND.draw(self.screen)
+
+    def draw_objects(self):
 
         # Layer 3: Draw dynamic components
 
@@ -132,6 +135,7 @@ class Dashboard():
         self.seven_segment_clock.set_time_now()
 
     def run(self):
+        
         running = True
         while running:
             current_time = pygame.time.get_ticks()
@@ -149,14 +153,17 @@ class Dashboard():
             # Update slower-changing components
             if current_time - self.last_slow_update_time > self.SLOW_UPDATE_INTERVAL:
                 self.update_slow_objects()
+                
                 self.last_slow_update_time = current_time
 
             # Check if it's time to start the animation
             if current_time >= self.last_animation_update_time:
                 self.update_animation()
                 self.last_animation_update_time = current_time
-
+            
+            self.draw_backgrounds()
             self.draw_objects()
+
             pygame.display.flip()
 
         pygame.quit()
