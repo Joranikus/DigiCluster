@@ -1,6 +1,6 @@
 # gauges.py
 import pygame
-from modules.stuff import ImageSprite
+from modules.visual_elements import ImageSprite
 
 class Gauge:
     def __init__(self, asset_path, position, min_value, max_value, max_bars=20, single_image_mode=False):
@@ -39,49 +39,64 @@ class Gauge:
                 if bar.active:
                     y_position = self.position[1] - (i * self.bar_height)
                     screen.blit(self.bar_image, (self.position[0], y_position))
+                    
+def calculate_rpm_value(self, progress):
+    """
+    Calculate the RPM value based on the current progress of the animation.
+
+    Args:
+        progress (float): The current progress of the animation, ranging from 0.0 to 1.0.
+
+    Returns:
+        float: The calculated RPM value.
+    """
+    if progress <= 0.5:
+        # In the first half of the animation, interpolate from min to max RPM
+        value = self.rpm_gauge.min_value + (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * (progress * 2)
+    else:
+        # In the second half, interpolate back from max to min RPM
+        value = self.rpm_gauge.max_value - (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * ((progress - 0.5) * 2)
+    return value
+
 
 class RPMGauge(Gauge):
     def __init__(self, asset_path, position, min_value, max_value, max_bars):
         super().__init__(asset_path, position, min_value, max_value, max_bars, single_image_mode=True)
-        self.step_value = (max_value - min_value) / (max_bars - 1)
-
-        # Preload all images for the gauge animation
-        self.preloaded_images = [pygame.image.load(f'{self.asset_path}rpm_{i * 100}.png') for i in range(1, max_bars + 1)]
+        self.step_value = (max_value - min_value) / (max_bars - 1)  # Defines the RPM increase per step
+        self.preloaded_images = [pygame.image.load(f'{asset_path}rpm_{i}00.png') for i in range(1, max_bars + 1)]
 
     def set_value(self, value):
-        """
-        Sets the RPM value and updates the gauge to display the corresponding image.
+        # Calculate the appropriate index from the value
+        new_rpm_index = int((value - self.min_value) / self.step_value)
 
-        Args:
-            value (float): The current RPM value, clamped to the min and max values.
-        """
-        # Ensure the value is within the valid range
-        value = max(self.min_value, min(value, self.max_value))
+        # Clamp the index to be within the list bounds
+        new_rpm_index = max(0, min(new_rpm_index, len(self.preloaded_images) - 1))
 
-        # Calculate the index for the image corresponding to the current RPM value
-        # This calculation assumes images are named for every 100 RPM from 100 to 7000
-        new_rpm_index = int((value + 99) // 100)  # Adding 99 to ensure proper rounding up for every 100 RPM
+        # Set the current bar image to the preloaded image
+        self.bar_image = self.preloaded_images[new_rpm_index]
 
-        # Ensure the new index falls within the range of available images
-        new_rpm_index = max(1, min(new_rpm_index, self.max_bars))
+def update(self):
+    if not self.startup_animation_active or self.start_time is None:
+        return
 
-        # Update the current RPM image if the index has changed
-        if self.current_bar_index != new_rpm_index:
-            self.current_bar_index = new_rpm_index
-            # Load the corresponding image based on the current_rpm_index
-            image_filename = f'rpm_{self.current_bar_index * 100}.png'
-            self.bar_image = pygame.image.load(f'{self.asset_path}{image_filename}')
+    current_time = time.time()
+    elapsed_time = current_time - self.start_time
+
+    if elapsed_time <= self.animation_duration:
+        progress = elapsed_time / self.animation_duration
+        # Use the calculate_rpm_value function to determine the RPM based on the progress
+        value = self.calculate_rpm_value(progress)
+
+        # Only update the gauge if the value has changed significantly
+        if not hasattr(self.rpm_gauge, 'current_value') or abs(self.rpm_gauge.current_value - value) >= 1:  # Assuming 1 RPM as the minimum significant change
+            self.rpm_gauge.current_value = value
+            self.rpm_gauge.set_value(value)
+    else:
+        self.startup_animation_active = False
 
 
-    def draw(self, screen):
-        """
-        Draws the current RPM image on the screen at the gauge's position.
-        """
-        if self.bar_image:  # Ensure there is an image to draw
-            screen.blit(self.bar_image, self.position)
 
 import time
-
 class RpmGaugeAnimation:
     def __init__(self, rpm_gauge, animation_duration=3):
         self.rpm_gauge = rpm_gauge

@@ -1,7 +1,7 @@
 import pygame
 from modules.segment_display import SevenSegmentClock, BatteryVoltageDisplay
 from modules.gauges import Gauge, RPMGauge, RpmGaugeAnimation
-from modules.stuff import PlaceObject, LightsManager
+from modules.visual_elements import PlaceObject, LightsManager
 
 class Dashboard():
     def __init__(self):
@@ -24,7 +24,7 @@ class Dashboard():
             'fuel_level': 50,
             'coolant_temp': 50,
             'turbo_pressure': 50,
-            'rpm_value': 6200,
+            'rpm_value': 100,
             'battery_voltage': 12.0,
             'lights': {
                 'coolant_warning': True,
@@ -38,7 +38,7 @@ class Dashboard():
         }
 
         # Start the RPM gauge animation
-        self.rpm_animation.start_animation()
+        # self.rpm_animation.start_animation()
 
     
     def init_objects(self):
@@ -76,7 +76,7 @@ class Dashboard():
                             max_bars=70
                             )
         # Initialize the RPM gauge animation
-        self.rpm_animation = RpmGaugeAnimation(self.rpm_gauge, animation_duration=2)
+        self.rpm_animation = RpmGaugeAnimation(self.rpm_gauge, animation_duration=3)
         self.rpm_animation.start_animation()  # Start the animation
 
         # Clock

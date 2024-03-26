@@ -1,5 +1,5 @@
 import pygame
-from modules.stuff import ImageSprite
+from modules.visual_elements import ImageSprite
 from datetime import datetime
 
 class SevenSegmentClock:
