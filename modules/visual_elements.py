@@ -1,9 +1,10 @@
 import pygame
 import os
+
 class ImageSprite(pygame.sprite.Sprite):
     def __init__(self, image_path, position):
         super().__init__()
-        self.image = pygame.image.load(image_path)
+        self.image = pygame.image.load(image_path).convert_alpha()  # Load and convert with transparency
         self.rect = self.image.get_rect(topleft=position)
         self.active = True  # Attribute to control visibility
 
@@ -20,8 +21,6 @@ class ImageSprite(pygame.sprite.Sprite):
         if self.active:
             surface.blit(self.image, self.rect)
 
-
-
 class PlaceObject:
     """
     A simple class for managing and drawing the background.
@@ -37,7 +36,7 @@ class PlaceObject:
         Args:
             image_path (str): Path to the background image file.
         """
-        self.image = pygame.image.load(image_path)
+        self.image = pygame.image.load(image_path).convert_alpha()  # Load and convert with transparency
 
     def draw(self, screen):
         """
@@ -50,11 +49,12 @@ class PlaceObject:
 
 class LightsManager:
     WARNING_LIGTHS_ASSETS_FOLDER = 'images/lights/lights'
-    def __init__(self, lights_folder=None, position=(0,0)):
+
+    def __init__(self, lights_folder=None, position=(0, 0)):
         self.lights = {}
         self.active_lights = set()
         self.base_position = position
-    
+
         if not lights_folder:
             lights_folder = self.WARNING_LIGTHS_ASSETS_FOLDER
 

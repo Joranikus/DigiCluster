@@ -6,7 +6,7 @@ from modules.visual_elements import PlaceObject, LightsManager
 class Dashboard():
     ANIMATION_DURATION = 2
     ANIMATION_UPDATE_INTERVAL = 10
-    FAST_UPDATE_INTERVAL = 50  # Update fast-changing components every 100 milliseconds (0.1 second)
+    FAST_UPDATE_INTERVAL = 70  # Update fast-changing components every 100 milliseconds (0.1 second)
     SLOW_UPDATE_INTERVAL = 1500  # Update slower-changing components every 1000 milliseconds (1 second)
 
     def __init__(self, debug_mode):

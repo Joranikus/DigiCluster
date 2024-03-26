@@ -9,5 +9,5 @@ DEBUG_MODE = True
 dashboard = Dashboard(debug_mode=DEBUG_MODE)
 dashboard.run()
 
-pygame.time.Clock().tick(60)
+pygame.time.Clock().tick(120)
 pygame.quit()
