@@ -2,9 +2,9 @@ import pygame
 import os
 
 class ImageSprite(pygame.sprite.Sprite):
-    def __init__(self, image_path, position):
+    def __init__(self, image, position):
         super().__init__()
-        self.image = pygame.image.load(image_path).convert_alpha() # Load and convert with transparency
+        self.image = image  # Use the preloaded image
         self.rect = self.image.get_rect(topleft=position)
         self.active = True  # Attribute to control visibility
 
@@ -21,15 +21,6 @@ class ImageSprite(pygame.sprite.Sprite):
         if self.active:
             surface.blit(self.image, self.rect)
 
-class PlaceObject:
-    # A simple class for managing and drawing the background.
-    
-    def __init__(self, image_path):
-        self.image = pygame.image.load(image_path).convert_alpha()  # Load and convert with transparency
-
-    def draw(self, screen):
-        screen.blit(self.image, (0, 0))
-
 class LightsManager:
     WARNING_LIGTHS_ASSETS_FOLDER = 'images/lights/lights'
 
@@ -37,15 +28,27 @@ class LightsManager:
         self.lights = {}
         self.active_lights = set()
         self.base_position = position
+        self.image_cache = {}  # Cache for preloaded images
 
         if not lights_folder:
             lights_folder = self.WARNING_LIGTHS_ASSETS_FOLDER
 
+        # Preload images into the cache
+        self._preload_images(lights_folder)
+
         for filename in os.listdir(lights_folder):
             if filename.endswith('.png'):
-                image_path = os.path.join(lights_folder, filename)
                 key, _ = os.path.splitext(filename)
-                self.lights[key] = ImageSprite(image_path, position)
+                # Use the preloaded image from the cache
+                self.lights[key] = ImageSprite(self.image_cache[filename], position)
+
+    def _preload_images(self, folder):
+        """Preload all images into the cache."""
+        for filename in os.listdir(folder):
+            if filename.endswith('.png'):
+                image_path = os.path.join(folder, filename)
+                # Load and convert the image, then store it in the cache
+                self.image_cache[filename] = pygame.image.load(image_path).convert_alpha()
 
     def set_value(self, key, value):
         """Set the visibility of a light based on a boolean value."""
@@ -59,3 +62,13 @@ class LightsManager:
         """Draw all active lights."""
         for key in self.active_lights:
             self.lights[key].draw(surface)
+
+
+class PlaceObject:
+    # A simple class for managing and drawing the background.
+    
+    def __init__(self, image_path):
+        self.image = pygame.image.load(image_path).convert_alpha()  # Load and convert with transparency
+
+    def draw(self, screen):
+        screen.blit(self.image, (0, 0))

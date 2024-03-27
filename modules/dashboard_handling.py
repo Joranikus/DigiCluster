@@ -47,7 +47,8 @@ class Dashboard():
     def init_backgrounds(self):
                 # Initialize background layers
         # Layer 1 Background
-        self.BACKGROUND = PlaceObject('images/background.png')
+        #self.BACKGROUND = PlaceObject('images/background.png')
+        self.LOGO = PlaceObject('images/scirocco_logo.png')
 
         # Layer 2 Background Objects
         self.RPM_BACKGROUND = PlaceObject('images/rpm/rpm_background.png')
@@ -90,9 +91,12 @@ class Dashboard():
         self.battery_voltage_display = BatteryVoltageDisplay()
 
     def draw_backgrounds(self):
-        # Layer 1: Draw background
-        self.BACKGROUND.draw(self.screen)
+        # Fill the screen with a background color
+        self.screen.fill((0, 0, 0))  # This fills the screen with black. Change the RGB tuple for different colors.
 
+        # Draw logo and component backgrounds
+        self.LOGO.draw(self.screen)
+        
         # Layer 2: Draw components in "off" state
         self.RPM_BACKGROUND.draw(self.screen)
         self.MFA_BACKGROUND.draw(self.screen)
