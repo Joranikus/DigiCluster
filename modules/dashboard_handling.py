@@ -7,11 +7,13 @@ from modules.gauges import Gauge, RPMGauge, RpmGaugeAnimation
 from modules.visual_elements import PlaceObject, LightsManager
 
 class Dashboard():
-    ANIMATION_DURATION = 1
-    ANIMATION_UPDATE_INTERVAL = 60
+    ANIMATION_DURATION = 2
     ANIMATION_START_DELAY = 1
-    FAST_UPDATE_INTERVAL = 60  # Update fast-changing components every 100 milliseconds (0.1 second)
-    SLOW_UPDATE_INTERVAL = 1500  # Update slower-changing components every 1000 milliseconds (1 second)
+    
+    PYGAME_TIME_CLOCK = 60
+    ANIMATION_UPDATE_INTERVAL = PYGAME_TIME_CLOCK * 1
+    FAST_UPDATE_INTERVAL = PYGAME_TIME_CLOCK * 1  
+    SLOW_UPDATE_INTERVAL = 1500
 
     def __init__(self, debug_mode):
         pygame.init()
@@ -169,7 +171,7 @@ class Dashboard():
             self.draw_objects()
 
             pygame.display.flip()
-            pygame.time.Clock().tick(60)
+            pygame.time.Clock().tick(self.PYGAME_TIME_CLOCK)
 
             if self.debug_mode:
                 cycle_end_time = time.time()  # Record the end time of the cycle
