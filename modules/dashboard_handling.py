@@ -6,7 +6,7 @@ from modules.visual_elements import PlaceObject, LightsManager
 class Dashboard():
     ANIMATION_DURATION = 2
     ANIMATION_UPDATE_INTERVAL = 60
-    ANIMATION_START_DELAY = 3
+    ANIMATION_START_DELAY = 10
     FAST_UPDATE_INTERVAL = 60  # Update fast-changing components every 100 milliseconds (0.1 second)
     SLOW_UPDATE_INTERVAL = 1500  # Update slower-changing components every 1000 milliseconds (1 second)
 
@@ -39,6 +39,8 @@ class Dashboard():
         self.init_backgrounds()
         self.draw_backgrounds()
         self.init_objects()
+        
+        self.animation_active = False
 
         self.last_animation_update_time = pygame.time.get_ticks()
         self.last_fast_update_time = pygame.time.get_ticks()
@@ -105,7 +107,6 @@ class Dashboard():
         self.BARS_BACKGROUND.draw(self.screen)
 
     def draw_objects(self):
-
         # Layer 3: Draw dynamic components
 
         self.oil_pressure_gauge.draw(self.screen)
@@ -119,10 +120,9 @@ class Dashboard():
         self.battery_voltage_display.draw(self.screen)
 
     def update_animation(self):
-        # Update animation
-
-        self.rpm_animation.update()
-
+        # Update animation and check its status
+        self.animation_active = self.rpm_animation.update()
+        
     def update_fast_objects(self):
         self.rpm_gauge.set_value(self.dynamic_data['rpm_value'])
         for light, state in self.dynamic_data['lights'].items():
@@ -139,7 +139,6 @@ class Dashboard():
         self.seven_segment_clock.set_time_now()
 
     def run(self):
-        
         running = True
         while running:
             current_time = pygame.time.get_ticks()
@@ -147,23 +146,18 @@ class Dashboard():
                 if event.type == pygame.QUIT:
                     running = False
 
+            # Always update the animation
+            self.update_animation()
 
-
-            # Update fast-changing components
-            if current_time - self.last_fast_update_time > self.FAST_UPDATE_INTERVAL:
+            # Update fast-changing components only if animation is not active
+            if not self.animation_active and current_time - self.last_fast_update_time > self.FAST_UPDATE_INTERVAL:
                 self.update_fast_objects()
                 self.last_fast_update_time = current_time
             
-            # Update slower-changing components
-            if current_time - self.last_slow_update_time > self.SLOW_UPDATE_INTERVAL:
-                self.update_slow_objects()
-                
+            # Update slower-changing components only if animation is not active
+            if not self.animation_active and current_time - self.last_slow_update_time > self.SLOW_UPDATE_INTERVAL:
+                self.update_slow_objects()                
                 self.last_slow_update_time = current_time
-
-            # Check if it's time to start the animation
-            if current_time >= self.last_animation_update_time:
-                self.update_animation()
-                self.last_animation_update_time = current_time
             
             self.draw_backgrounds()
             self.draw_objects()

@@ -92,6 +92,9 @@ class RPMGauge(Gauge):
             self.startup_animation_active = False
 
 import time
+
+import time
+
 class RpmGaugeAnimation:
     def __init__(self, rpm_gauge, animation_duration=3, start_delay=2):
         self.rpm_gauge = rpm_gauge
@@ -99,9 +102,11 @@ class RpmGaugeAnimation:
         self.start_delay = start_delay  # Delay in seconds before animation starts
         self.start_time = None
         self.animation_started = False
+        self.animation_active = False  # Track whether the animation is currently active
 
     def start_animation(self):
         self.start_time = time.time()
+        self.animation_active = True  # Animation is considered active once started
 
     def update(self):
         if not self.animation_started:
@@ -117,16 +122,31 @@ class RpmGaugeAnimation:
 
             if 0 <= elapsed_time <= self.animation_duration:
                 progress = elapsed_time / self.animation_duration
-
-                if progress <= 0.5:
-                    value = self.rpm_gauge.min_value + (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * (progress * 2)
-                else:
-                    value = self.rpm_gauge.max_value - (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * ((progress - 0.5) * 2)
-
+                value = self.calculate_rpm_value(progress)  # Now this method is called as part of the instance
                 self.rpm_gauge.set_value(value)
             else:
-                # Ensure that the animation stops at the end of its duration
                 self.animation_started = False
+                self.animation_active = False  # Animation is no longer active after completion
+
+        return self.animation_active  # Return the animation's active status
+
+    def calculate_rpm_value(self, progress):
+        """
+        Calculate the RPM value based on the current progress of the animation.
+
+        Args:
+            progress (float): The current progress of the animation, ranging from 0.0 to 1.0.
+
+        Returns:
+            float: The calculated RPM value.
+        """
+        if progress <= 0.5:
+            # In the first half of the animation, interpolate from min to max RPM
+            value = self.rpm_gauge.min_value + (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * (progress * 2)
+        else:
+            # In the second half, interpolate back from max to min RPM
+            value = self.rpm_gauge.max_value - (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * ((progress - 0.5) * 2)
+        return value
 
     def draw(self, surface):
         if self.animation_started:
