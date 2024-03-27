@@ -1,6 +1,6 @@
 # gauges.py
 import pygame
-from modules.stuff import ImageSprite
+from modules.visual_elements import ImageSprite
 
 class Gauge:
     def __init__(self, asset_path, position, min_value, max_value, max_bars=20, single_image_mode=False):
@@ -11,7 +11,7 @@ class Gauge:
         self.asset_path = asset_path
         self.single_image_mode = single_image_mode  # Indicates whether the gauge uses single image mode
         self.current_bar_index = 1 if single_image_mode else None  # Track the current image index if in single image mode
-        self.bar_image = None if single_image_mode else pygame.image.load(f'{self.asset_path}{1}.png')  # Load the first image or None
+        self.bar_image = None if single_image_mode else pygame.image.load(f'{self.asset_path}{1}.png').convert_alpha()  # Load the first image or None
 
     def set_value(self, value):
         normalized_value = (value - self.min_value) / (self.max_value - self.min_value)
@@ -40,78 +40,94 @@ class Gauge:
                     y_position = self.position[1] - (i * self.bar_height)
                     screen.blit(self.bar_image, (self.position[0], y_position))
 
+def calculate_rpm_value(self, progress):
+    """
+    Calculate the RPM value based on the current progress of the animation.
+
+    Args:
+        progress (float): The current progress of the animation, ranging from 0.0 to 1.0.
+
+    Returns:
+        float: The calculated RPM value.
+    """
+    if progress <= 0.5:
+        # In the first half of the animation, interpolate from min to max RPM
+        value = self.rpm_gauge.min_value + (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * (progress * 2)
+    else:
+        # In the second half, interpolate back from max to min RPM
+        value = self.rpm_gauge.max_value - (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * ((progress - 0.5) * 2)
+    return value
+
+
 class RPMGauge(Gauge):
     def __init__(self, asset_path, position, min_value, max_value, max_bars):
         super().__init__(asset_path, position, min_value, max_value, max_bars, single_image_mode=True)
-        self.step_value = (max_value - min_value) / (max_bars - 1)
-
-        # Preload all images for the gauge animation
-        self.preloaded_images = [pygame.image.load(f'{self.asset_path}rpm_{i * 100}.png') for i in range(1, max_bars + 1)]
+        self.step_value = (max_value - min_value) / (max_bars - 1)  # Defines the RPM increase per step
+        self.preloaded_images = [pygame.image.load(f'{asset_path}rpm_{i}00.png').convert_alpha() for i in range(1, max_bars + 1)]
 
     def set_value(self, value):
-        """
-        Sets the RPM value and updates the gauge to display the corresponding image.
+        # Calculate the appropriate index from the value
+        new_rpm_index = int((value - self.min_value) / self.step_value)
 
-        Args:
-            value (float): The current RPM value, clamped to the min and max values.
-        """
-        # Ensure the value is within the valid range
-        value = max(self.min_value, min(value, self.max_value))
+        # Clamp the index to be within the list bounds
+        new_rpm_index = max(0, min(new_rpm_index, len(self.preloaded_images) - 1))
 
-        # Calculate the index for the image corresponding to the current RPM value
-        # This calculation assumes images are named for every 100 RPM from 100 to 7000
-        new_rpm_index = int((value + 99) // 100)  # Adding 99 to ensure proper rounding up for every 100 RPM
-
-        # Ensure the new index falls within the range of available images
-        new_rpm_index = max(1, min(new_rpm_index, self.max_bars))
-
-        # Update the current RPM image if the index has changed
-        if self.current_bar_index != new_rpm_index:
-            self.current_bar_index = new_rpm_index
-            # Load the corresponding image based on the current_rpm_index
-            image_filename = f'rpm_{self.current_bar_index * 100}.png'
-            self.bar_image = pygame.image.load(f'{self.asset_path}{image_filename}')
-
-
-    def draw(self, screen):
-        """
-        Draws the current RPM image on the screen at the gauge's position.
-        """
-        if self.bar_image:  # Ensure there is an image to draw
-            screen.blit(self.bar_image, self.position)
-
-import time
-
-class RpmGaugeAnimation:
-    def __init__(self, rpm_gauge, animation_duration=3):
-        self.rpm_gauge = rpm_gauge
-        self.animation_duration = animation_duration
-        self.start_time = None
-        self.startup_animation_active = False
-
-    def start_animation(self):
-        self.start_time = time.time()
-        self.startup_animation_active = True
+        # Set the current bar image to the preloaded image
+        self.bar_image = self.preloaded_images[new_rpm_index]
 
     def update(self):
         if not self.startup_animation_active or self.start_time is None:
             return
 
         current_time = time.time()
-        elapsed_time = current_time - self.start_time
+        delta_time = current_time - self.last_update_time
+        self.last_update_time = current_time
+        self.elapsed_time += delta_time
 
-        if elapsed_time <= self.animation_duration:
-            progress = elapsed_time / self.animation_duration
-
-            if progress <= 0.5:
-                value = self.rpm_gauge.min_value + (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * (progress * 2)
-            else:
-                value = self.rpm_gauge.max_value - (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * ((progress - 0.5) * 2)
-
+        if self.elapsed_time <= self.animation_duration:
+            progress = self.elapsed_time / self.animation_duration
+            value = self.calculate_rpm_value(progress)
             self.rpm_gauge.set_value(value)
         else:
             self.startup_animation_active = False
 
+import time
+class RpmGaugeAnimation:
+    def __init__(self, rpm_gauge, animation_duration=3, start_delay=2):
+        self.rpm_gauge = rpm_gauge
+        self.animation_duration = animation_duration
+        self.start_delay = start_delay  # Delay in seconds before animation starts
+        self.start_time = None
+        self.animation_started = False
+
+    def start_animation(self):
+        self.start_time = time.time()
+
+    def update(self):
+        if not self.animation_started:
+            current_time = time.time()
+            elapsed_time = current_time - self.start_time
+
+            if elapsed_time >= self.start_delay:
+                self.animation_started = True
+
+        if self.animation_started:
+            current_time = time.time()
+            elapsed_time = current_time - (self.start_time + self.start_delay)
+
+            if 0 <= elapsed_time <= self.animation_duration:
+                progress = elapsed_time / self.animation_duration
+
+                if progress <= 0.5:
+                    value = self.rpm_gauge.min_value + (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * (progress * 2)
+                else:
+                    value = self.rpm_gauge.max_value - (self.rpm_gauge.max_value - self.rpm_gauge.min_value) * ((progress - 0.5) * 2)
+
+                self.rpm_gauge.set_value(value)
+            else:
+                # Ensure that the animation stops at the end of its duration
+                self.animation_started = False
+
     def draw(self, surface):
-        if self.startup_animation_active:
+        if self.animation_started:
             self.rpm_gauge.draw(surface)
