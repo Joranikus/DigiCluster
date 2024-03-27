@@ -1,23 +1,27 @@
 import pygame
+import time
+import numpy as np
+
 from modules.segment_display import SevenSegmentClock, BatteryVoltageDisplay
 from modules.gauges import Gauge, RPMGauge, RpmGaugeAnimation
 from modules.visual_elements import PlaceObject, LightsManager
 
 class Dashboard():
-    ANIMATION_DURATION = 2
+    ANIMATION_DURATION = 1
     ANIMATION_UPDATE_INTERVAL = 60
-    ANIMATION_START_DELAY = 10
+    ANIMATION_START_DELAY = 1
     FAST_UPDATE_INTERVAL = 60  # Update fast-changing components every 100 milliseconds (0.1 second)
     SLOW_UPDATE_INTERVAL = 1500  # Update slower-changing components every 1000 milliseconds (1 second)
 
     def __init__(self, debug_mode):
         pygame.init()
-        if debug_mode:
+        self.debug_mode = debug_mode
+        if self.debug_mode:
             screen_width, screen_height = 800, 480
             self.screen = pygame.display.set_mode((screen_width, screen_height), pygame.HWSURFACE | pygame.DOUBLEBUF)
         else:
             screen_width, screen_height = pygame.display.Info().current_w, pygame.display.Info().current_h
-            self.screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)  # Fullscreen mode
+            self.screen = pygame.display.set_mode((screen_width, screen_height), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.FULLSCREEN)  # Fullscreen mode
         self.dynamic_data = {
             'oil_pressure': 3,
             'fuel_level': 50,
@@ -141,6 +145,8 @@ class Dashboard():
     def run(self):
         running = True
         while running:
+            cycle_start_time = time.time()  # Record the start time of the cycle
+
             current_time = pygame.time.get_ticks()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -163,5 +169,13 @@ class Dashboard():
             self.draw_objects()
 
             pygame.display.flip()
+            pygame.time.Clock().tick(60)
+
+            if self.debug_mode:
+                cycle_end_time = time.time()  # Record the end time of the cycle
+                cycle_duration = cycle_end_time - cycle_start_time  # Calculate the duration of the cycle
+                print(f"Cycle Duration: {cycle_duration:.4f} seconds")  # Conditionally print the cycle duration
 
         pygame.quit()
+
+        
